@@ -52,6 +52,9 @@ def _transform(in_image,loaded,m_path):
     return np.asarray(med)
 
 if __name__ == '__main__':
+    path_to_presets = './chainer-fast-neuralsyle/models/presets'
+    path_to_user_models = './chainer-fast-neuralsyle/models/'
+
     cv2.namedWindow("style")
     vc = cv2.VideoCapture(CAMERA_ID)
     vc.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
@@ -59,7 +62,7 @@ if __name__ == '__main__':
     if vc.isOpened():
         rval, frame = vc.read()
         loaded = False
-        mpath = 'models/edtaonisl.model'
+        mpath = f'{path_to_presets}edtaonisl.model'
     else:
         rval = False
     while rval:
@@ -73,28 +76,28 @@ if __name__ == '__main__':
         loaded=True
         key = cv2.waitKey(1)
         if key == 49: # 1
-            mpath='models/edtaonisl.model'
+            mpath=f'{path_to_presets}edtaonisl.model'
             loaded=False
         if key == 50: # 2
-            mpath='models/natasha-russu.model'
+            mpath=f'{path_to_presets}natasha-russu.model'
             loaded=False
         if key == 51: # 3
-            mpath='models/kandinsky_e2_crop512.model'
+            mpath=f'{path_to_presets}kandinsky_e2_crop512.model'
             loaded=False
         if key == 52: # 4
-            mpath='models/composition.model'
+            mpath=f'{path_to_presets}composition.model'
             loaded=False
         if key == 53: # 5
-            mpath='models/scream-style.model'
+            mpath=f'{path_to_presets}scream-style.model'
             loaded=False
         if key == 54: # 6
-            mpath='models/candy.model'
+            mpath=f'{path_to_presets}candy.model'
             loaded=False
         if key == 55: # 7
-            mpath='models/kanagawa.model'
+            mpath=f'{path_to_presets}kanagawa.model'
             loaded=False
         if key == 56: # 8
-            mpath='models/fur.model'
+            mpath=f'{path_to_presets}fur.model'
             loaded=False
         if key == 57: # 9
             mpath='none'

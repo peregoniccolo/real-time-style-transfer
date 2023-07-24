@@ -1,6 +1,7 @@
 from __future__ import print_function, division
 import numpy as np
-import os, re
+import os
+import re
 import argparse
 import random
 from PIL import Image
@@ -8,9 +9,43 @@ from PIL import Image
 from chainer import cuda, Variable, optimizers, serializers
 from net import *
 
+import glob
+
+
+def check_resume(style_name, higher=False):
+    higher_it = 1 if higher else 0
+
+    query_model = glob.glob(f'./models/check_{style_name}*.model')
+    if (query_model):
+        assert len(
+            query_model) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same model found"
+        query_model.sort()
+        info = query_model[higher_it].split("/")[-1].split(".")[0].split("_")
+        start_it_model = int(info[-1]) // batchsize
+        start_epoch_model = int(info[-2])
+
+    query_state = glob.glob(f'./models/{style_name}*.state')
+    if (query_state):
+        assert len(
+            query_state) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same state found"
+        query_state.sort()
+        info = query_state[higher_it].split("/")[-1].split(".")[0].split("_")
+        start_it_state = int(info[-1]) // batchsize
+        start_epoch_state = int(info[-2])
+
+    if not query_model or not query_state:
+        print("unmatching state and model found, starting over")
+        return None, None, 0, 0
+
+    if (start_epoch_model == start_epoch_state and start_it_model == start_it_state):
+        initmodel = query_model[higher_it]
+        resume = query_state[higher_it]
+        return initmodel, resume, start_it_model, start_epoch_model
+
+
 def load_image(path, size):
     image = Image.open(path).convert('RGB')
-    w,h = image.size
+    w, h = image.size
     if w < h:
         if w < size:
             image = image.resize((size, size*h//w))
@@ -19,8 +54,10 @@ def load_image(path, size):
         if h < size:
             image = image.resize((size*w//h, size))
             w, h = image.size
-    image = image.crop(((w-size)*0.5, (h-size)*0.5, (w+size)*0.5, (h+size)*0.5))
+    image = image.crop(((w-size)*0.5, (h-size)*0.5,
+                       (w+size)*0.5, (h+size)*0.5))
     return xp.asarray(image, dtype=np.float32).transpose(2, 0, 1)
+
 
 def gram_matrix(y):
     b, ch, h, w = y.data.shape
@@ -28,17 +65,21 @@ def gram_matrix(y):
     gram = F.batch_matmul(features, features, transb=True)/np.float32(ch*w*h)
     return gram
 
+
 def total_variation(x):
     xp = cuda.get_array_module(x.data)
     b, ch, h, w = x.data.shape
-    wh = Variable(xp.asarray([[[[1], [-1]], [[0], [0]], [[0], [0]]], [[[0], [0]], [[1], [-1]], [[0], [0]]], [[[0], [0]], [[0], [0]], [[1], [-1]]]], dtype=np.float32))
-    ww = Variable(xp.asarray([[[[1, -1]], [[0, 0]], [[0, 0]]], [[[0, 0]], [[1, -1]], [[0, 0]]], [[[0, 0]], [[0, 0]], [[1, -1]]]], dtype=np.float32))
+    wh = Variable(xp.asarray([[[[1], [-1]], [[0], [0]], [[0], [0]]], [[[0], [0]], [
+                  [1], [-1]], [[0], [0]]], [[[0], [0]], [[0], [0]], [[1], [-1]]]], dtype=np.float32))
+    ww = Variable(xp.asarray([[[[1, -1]], [[0, 0]], [[0, 0]]], [[[0, 0]], [
+                  [1, -1]], [[0, 0]]], [[[0, 0]], [[0, 0]], [[1, -1]]]], dtype=np.float32))
     return F.sum(F.convolution_2d(x, W=wh) ** 2) + F.sum(F.convolution_2d(x, W=ww) ** 2)
+
 
 parser = argparse.ArgumentParser(description='Real-time style transfer')
 parser.add_argument('--gpu', '-g', default=-1, type=int,
                     help='GPU ID (negative value indicates CPU)')
-parser.add_argument('--dataset', '-d', default='dataset', type=str,
+parser.add_argument('--dataset', '-d', default='./coco/train2014', type=str,
                     help='dataset directory path (according to the paper, use MSCOCO 80k images)')
 parser.add_argument('--style_image', '-s', type=str, required=True,
                     help='style image path')
@@ -64,6 +105,8 @@ parser.add_argument('--epoch', '-e', default=2, type=int)
 parser.add_argument('--lr', '-l', default=1e-3, type=float)
 parser.add_argument('--checkpoint', '-c', default=0, type=int)
 parser.add_argument('--image_size', default=256, type=int)
+parser.add_argument('--auto_resume', default=True, type=bool)
+parser.add_argument('--resume_from_newest', default=False, type=bool)
 args = parser.parse_args()
 
 batchsize = args.batchsize
@@ -78,13 +121,25 @@ noise_range = args.noise
 noise_count = args.noisecount
 style_prefix, _ = os.path.splitext(os.path.basename(args.style_image))
 output = style_prefix if args.output == None else args.output
-fs = os.listdir(args.dataset)
-imagepaths = []
-for fn in fs:
-    base, ext = os.path.splitext(fn)
-    if ext == '.jpg' or ext == '.png':
-        imagepath = os.path.join(args.dataset,fn)
-        imagepaths.append(imagepath)
+checkpoint = args.checkpoint
+slack = checkpoint*2 # 2 save only the last 2 checkpoints
+
+if os.path.exists('fs.list'):
+    # read from file with names to save time
+    with open('fs.list') as f:
+        imagepaths = f.read().splitlines()
+else:
+    # one off, create file with image names
+    fs = os.listdir(args.dataset)
+    imagepaths = []
+    for fn in fs:
+        base, ext = os.path.splitext(fn)
+        if ext == '.jpg' or ext == '.png':
+            imagepath = os.path.join(args.dataset, fn)
+            imagepaths.append(imagepath)
+    with open('fs.list', 'w') as tfile:
+        tfile.write('\n'.join(imagepaths))
+
 n_data = len(imagepaths)
 print('num traning images:', n_data)
 n_iter = n_data // batchsize
@@ -92,10 +147,20 @@ print(n_iter, 'iterations,', n_epoch, 'epochs')
 
 model = FastStyleNet()
 vgg = VGG()
+
+if args.auto_resume:
+    # gather initmodel, resume and last iteration and epoch from saved files
+    args.initmodel, args.resume, start_it, start_ep = check_resume(output, args.resume_from_newest)
+else:
+    # manual resume, if specified model and state files will be used, but starting from it and ep 0
+    start_it = 0
+    start_ep = 0
+
 serializers.load_npz('vgg16.model', vgg)
 if args.initmodel:
     print('load model from', args.initmodel)
     serializers.load_npz(args.initmodel, model)
+
 if args.gpu >= 0:
     cuda.get_device(args.gpu).use()
     model.to_gpu()
@@ -108,7 +173,8 @@ if args.resume:
     print('load optimizer state from', args.resume)
     serializers.load_npz(args.resume, O)
 
-style = vgg.preprocess(np.asarray(Image.open(args.style_image).convert('RGB').resize((image_size,image_size)), dtype=np.float32))
+style = vgg.preprocess(np.asarray(Image.open(args.style_image).convert(
+    'RGB').resize((image_size, image_size)), dtype=np.float32))
 style = xp.asarray(style, dtype=xp.float32)
 style_b = xp.zeros((batchsize,) + style.shape, dtype=xp.float32)
 for i in range(batchsize):
@@ -116,7 +182,7 @@ for i in range(batchsize):
 feature_s = vgg(Variable(style_b))
 gram_s = [gram_matrix(y) for y in feature_s]
 
-for epoch in range(n_epoch):
+for epoch in range(start_ep, n_epoch):
     print('epoch', epoch)
 
     if noise_count:
@@ -131,7 +197,7 @@ for epoch in range(n_epoch):
             noiseimg[1][yy][xx] += random.randrange(-noise_range, noise_range)
             noiseimg[2][yy][xx] += random.randrange(-noise_range, noise_range)
 
-    for i in range(n_iter):
+    for i in range(start_it, n_iter):
         model.zerograds()
         vgg.zerograds()
 
@@ -161,11 +227,14 @@ for epoch in range(n_epoch):
         feature = vgg(xc)
         feature_hat = vgg(y)
 
-        L_feat = lambda_f * F.mean_squared_error(Variable(feature[2].data), feature_hat[2]) # compute for only the output of layer conv3_3
+        # compute for only the output of layer conv3_3
+        L_feat = lambda_f * \
+            F.mean_squared_error(Variable(feature[2].data), feature_hat[2])
 
         L_style = Variable(xp.zeros((), dtype=np.float32))
         for f, f_hat, g_s in zip(feature, feature_hat, gram_s):
-            L_style += lambda_s * F.mean_squared_error(gram_matrix(f_hat), Variable(g_s.data))
+            L_style += lambda_s * \
+                F.mean_squared_error(gram_matrix(f_hat), Variable(g_s.data))
 
         L_tv = lambda_tv * total_variation(y)
 
@@ -177,22 +246,25 @@ for epoch in range(n_epoch):
             L_pop = lambda_noise * F.mean_squared_error(y, noisy_y)
             L = L_feat + L_style + L_tv + L_pop
             print('Epoch {},{}/{}. Total loss: {}. Loss distribution: feat {}, style {}, tv {}, pop {}'
-                         .format(epoch, i, n_iter, L.data,
-                                 L_feat.data/L.data, L_style.data/L.data,
-                                 L_tv.data/L.data, L_pop.data/L.data))
+                  .format(epoch, i, n_iter, L.data,
+                          L_feat.data/L.data, L_style.data/L.data,
+                          L_tv.data/L.data, L_pop.data/L.data))
         else:
             L = L_feat + L_style + L_tv
             print('Epoch {},{}/{}. Total loss: {}. Loss distribution: feat {}, style {}, tv {}'
-                         .format(epoch, i, n_iter, L.data,
-                                 L_feat.data/L.data, L_style.data/L.data,
-                                 L_tv.data/L.data))
+                  .format(epoch, i, n_iter, L.data,
+                          L_feat.data/L.data, L_style.data/L.data,
+                          L_tv.data/L.data))
 
         L.backward()
         O.update()
 
-        if args.checkpoint > 0 and i % args.checkpoint == 0:
-            serializers.save_npz('models/{}_{}_{}.model'.format(output, epoch, i), model)
-            serializers.save_npz('models/{}_{}_{}.state'.format(output, epoch, i), O)
+        if checkpoint > 0 and i % checkpoint == 0:
+            if i >= start_it + slack:
+                os.remove('models/check_{}_{}_{}.model'.format(output, epoch, i - slack))
+                os.remove('models/check_{}_{}_{}.state'.format(output, epoch, i - slack))
+            serializers.save_npz('models/check_{}_{}_{}.model'.format(output, epoch, i), model)
+            serializers.save_npz('models/check_{}_{}_{}.state'.format(output, epoch, i), O)
 
     print('save "style.model"')
     serializers.save_npz('models/{}_{}.model'.format(output, epoch), model)
