@@ -124,9 +124,9 @@ output = style_prefix if args.output == None else args.output
 checkpoint = args.checkpoint
 slack = checkpoint*2 # 2 save only the last 2 checkpoints
 
-if os.path.exists('fs.list'):
+if os.path.exists(f'{args.dataset}/../fs.list'):
     # read from file with names to save time
-    with open('fs.list') as f:
+    with open(f'{args.dataset}/../fs.list') as f:
         imagepaths = f.read().splitlines()
 else:
     # one off, create file with image names
@@ -137,7 +137,7 @@ else:
         if ext == '.jpg' or ext == '.png':
             imagepath = os.path.join(args.dataset, fn)
             imagepaths.append(imagepath)
-    with open('fs.list', 'w') as tfile:
+    with open(f'{args.dataset}/../fs.list', 'w') as tfile:
         tfile.write('\n'.join(imagepaths))
 
 n_data = len(imagepaths)

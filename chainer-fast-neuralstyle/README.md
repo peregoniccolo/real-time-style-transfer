@@ -1,7 +1,7 @@
 # Chainer implementation of "Perceptual Losses for Real-Time Style Transfer and Super-Resolution"
 Fast artistic style transfer by using feed forward network.
 
-**checkout [resize-conv](https://github.com/yusuketomoto/chainer-fast-neuralstyle/tree/resize-conv) branch which provides better result.**
+**checkout [resize-conv](https://github.com/yusuketomoto/chainer-fast-neuralstyle/tree/resize-conv) which provides better result.**
 
 <img src="https://raw.githubusercontent.com/yusuketomoto/chainer-fast-neuralstyle/master/sample_images/tubingen.jpg" height="200px">
 
@@ -34,6 +34,28 @@ According to the paper, the models are trained on the [Microsoft COCO dataset](h
 ```
 python train.py -s <style_image_path> -d <training_dataset_path> -g <use_gpu ? gpu_id : -1>
 ```
+
+Arguments:
+| Parameter | Shortcut | Default | Type | Description |
+|---|---|---|---|---|
+| --gpu | -g | -1 | int | GPU selector. Anything > 0 selects that GPU if available. -1 means CPU is going to be used. |
+| --dataset | -d | ./coco/train2014 | str | Path to the dataset folder. |
+| --style_image | -s | REQUIRED | str | Path to the image from which the style will be extracted. |
+| --batchsize | -b | 1 | int | Size of the batches of images used to train the model. |
+| --output | -o | None | str | Output model name path without extension. |
+| --auto_resume |  | True | bool | The program will automatically try to start the training from the existing model and state file, associated to the output variable. Training will restart from the last completed iteration.  |
+| <div style="width:160px">--resume_from_newest</div> | // | True | bool | Start from the newest saved checkpoint (or from the oldest if False). |
+| --initmodel | -i | None | str | Initialize model manually with given file. |
+| --resume | -r | None | str | Initialize optimizer manyally with given file.  |
+| --lambda_feat | // | 1.0 | float | Feature loss weight. |
+| --lambda_style | // | 5.0 | float | Style loss weight. |
+| --lambda_noise | // | 1000.0 | float | Training weight of the popping induced by noise |
+| --noise | // | 30 | int | Range of noise for popping reduction. |
+| --noisecount | // | 1000 | int | Number of pixels to modify with noise. |
+| --epoch | -e | 2 | int | Number of epochs to train for. |
+| --lr | -r | 1e-3 | float | Learning rate for the Adam optimizer. |
+| --checkpoint | -c | 0 | int | If > 0, each time the current iteration % checkpoint == 0, the model and state will be saved as checkpoints. |
+| --image_size | // | 256 | int | Size to which the images are resized to. |
 
 ## Generate
 ```
