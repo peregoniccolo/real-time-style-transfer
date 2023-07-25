@@ -43,8 +43,8 @@ Arguments:
 | --style_image | -s | REQUIRED | str | Path to the image from which the style will be extracted. |
 | --batchsize | -b | 1 | int | Size of the batches of images used to train the model. |
 | --output | -o | None | str | Output model name path without extension. |
-| --auto_resume |  | True | bool | The program will automatically try to start the training from the existing model and state file, associated to the output variable. Training will restart from the last completed iteration.  |
-| <div style="width:160px">--resume_from_newest</div> | // | True | bool | Start from the newest saved checkpoint (or from the oldest if False). |
+| --auto_resume | -a | // | // | If -a is present the program will automatically try to start the training from the existing model and state file, associated to the output variable. Training will restart from the last completed iteration.  |
+| <div style="width:160px">--resume_from_oldest</div> | -rso | // | // | If present start from the oldest saved checkpoint. |
 | --initmodel | -i | None | str | Initialize model manually with given file. |
 | --resume | -r | None | str | Initialize optimizer manyally with given file.  |
 | --lambda_feat | // | 1.0 | float | Feature loss weight. |
