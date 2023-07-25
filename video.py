@@ -68,7 +68,6 @@ if __name__ == '__main__':
         rval, frame = vc.read()
         
         if rval:
-            rval, frame = vc.read()
             
             start = time.time()
             frame = cv2.resize( _transform(frame,loaded,mpath), (0,0), fx=1.0, fy=1.0)

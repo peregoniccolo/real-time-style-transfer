@@ -114,3 +114,7 @@ dmypy.json
 .pyre/
 
 **.DS_store
+
+models/check_*
+chainer-fast-neuralstyle/train2014.zip
+chainer-fast-neuralstyle/coco/*
