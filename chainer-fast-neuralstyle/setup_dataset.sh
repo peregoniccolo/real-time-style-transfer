@@ -6,3 +6,5 @@ if [ ! -d coco ]; then
     echo unzipping
     unzip 'train2014.zip' -d './coco'
 fi
+
+echo done

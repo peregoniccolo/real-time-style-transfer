@@ -1,3 +1,4 @@
+import os
 import cv2
 from chainer import cuda, Variable, serializers
 from net import *
@@ -5,7 +6,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 import time
 
-RUN_ON_GPU = True
+RUN_ON_GPU = False
 CAMERA_ID = 0 # 0 for integrated cam, 1 for first external can ....
 WIDTH=1
 HEIGHT=1
@@ -52,60 +53,60 @@ def _transform(in_image,loaded,m_path):
     return np.asarray(med)
 
 if __name__ == '__main__':
-    path_to_presets = './chainer-fast-neuralsyle/models/presets'
-    path_to_user_models = './chainer-fast-neuralsyle/models/'
+    path_to_presets = './chainer-fast-neuralstyle/models/presets/'
+    path_to_user_models = './chainer-fast-neuralstyle/models/'
 
     cv2.namedWindow("style")
     vc = cv2.VideoCapture(CAMERA_ID)
     vc.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
     vc.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
-    if vc.isOpened():
-        rval, frame = vc.read()
-        loaded = False
-        mpath = f'{path_to_presets}edtaonisl.model'
-    else:
-        rval = False
-    while rval:
-        cv2.imshow("style", frame)
+
+    loaded = False
+    mpath = f'{path_to_user_models}test_style.model'
+
+    while vc.isOpened():
         rval, frame = vc.read()
         
-        start = time.time()
-        frame = cv2.resize( _transform(frame,loaded,mpath), (0,0), fx=1.0, fy=1.0)
-        print(time.time() - start, 'sec')
-        
-        loaded=True
-        key = cv2.waitKey(1)
-        if key == 49: # 1
-            mpath=f'{path_to_presets}edtaonisl.model'
-            loaded=False
-        if key == 50: # 2
-            mpath=f'{path_to_presets}natasha-russu.model'
-            loaded=False
-        if key == 51: # 3
-            mpath=f'{path_to_presets}kandinsky_e2_crop512.model'
-            loaded=False
-        if key == 52: # 4
-            mpath=f'{path_to_presets}composition.model'
-            loaded=False
-        if key == 53: # 5
-            mpath=f'{path_to_presets}scream-style.model'
-            loaded=False
-        if key == 54: # 6
-            mpath=f'{path_to_presets}candy.model'
-            loaded=False
-        if key == 55: # 7
-            mpath=f'{path_to_presets}kanagawa.model'
-            loaded=False
-        if key == 56: # 8
-            mpath=f'{path_to_presets}fur.model'
-            loaded=False
-        if key == 57: # 9
-            mpath='none'
-            loaded=False
-        if 'c' == chr(key & 0xFF):
-            KEEP_COLORS = not KEEP_COLORS
-        if 'q' == chr(key & 0xFF):
-            break
-        #if cv2.waitKey(1) & 0xFF == ord('q'):
-        #    break            
+        if rval:
+            rval, frame = vc.read()
+            
+            start = time.time()
+            frame = cv2.resize( _transform(frame,loaded,mpath), (0,0), fx=1.0, fy=1.0)
+            cv2.imshow("style", frame)
+            print(time.time() - start, 'sec')
+            
+            loaded=True
+            key = cv2.waitKey(1)
+            if key == 49: # 1
+                mpath=f'{path_to_presets}edtaonisl.model'
+                loaded=False
+            if key == 50: # 2
+                mpath=f'{path_to_presets}natasha-russu.model'
+                loaded=False
+            if key == 51: # 3
+                mpath=f'{path_to_presets}kandinsky_e2_crop512.model'
+                loaded=False
+            if key == 52: # 4
+                mpath=f'{path_to_presets}composition.model'
+                loaded=False
+            if key == 53: # 5
+                mpath=f'{path_to_presets}scream-style.model'
+                loaded=False
+            if key == 54: # 6
+                mpath=f'{path_to_presets}candy.model'
+                loaded=False
+            if key == 55: # 7
+                mpath=f'{path_to_presets}kanagawa.model'
+                loaded=False
+            if key == 56: # 8
+                mpath=f'{path_to_presets}fur.model'
+                loaded=False
+            if key == 57: # 9
+                mpath='none'
+                loaded=False
+            if 'c' == chr(key & 0xFF):
+                KEEP_COLORS = not KEEP_COLORS
+            if 'q' == chr(key & 0xFF):
+                break
+                 
     cv2.destroyWindow("preview")

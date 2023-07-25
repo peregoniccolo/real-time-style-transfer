@@ -3,3 +3,5 @@ if [ ! -f VGG_ILSVRC_16_layers.caffemodel ]; then
 fi
 
 python create_chainer_model.py
+
+echo done

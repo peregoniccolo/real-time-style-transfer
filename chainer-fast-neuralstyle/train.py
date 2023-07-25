@@ -1,7 +1,6 @@
 from __future__ import print_function, division
 import numpy as np
 import os
-import re
 import argparse
 import random
 from PIL import Image
@@ -12,15 +11,15 @@ from net import *
 import glob
 
 
-def check_resume(style_name, higher=False):
-    higher_it = 1 if higher else 0
+def check_resume(style_name, oldest):
+    oldest_it = 0 if oldest else 1
 
     query_model = glob.glob(f'./models/check_{style_name}*.model')
     if (query_model):
         assert len(
             query_model) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same model found"
         query_model.sort()
-        info = query_model[higher_it].split("/")[-1].split(".")[0].split("_")
+        info = query_model[oldest_it].split("/")[-1].split(".")[0].split("_")
         start_it_model = int(info[-1]) // batchsize
         start_epoch_model = int(info[-2])
 
@@ -29,7 +28,7 @@ def check_resume(style_name, higher=False):
         assert len(
             query_state) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same state found"
         query_state.sort()
-        info = query_state[higher_it].split("/")[-1].split(".")[0].split("_")
+        info = query_state[oldest_it].split("/")[-1].split(".")[0].split("_")
         start_it_state = int(info[-1]) // batchsize
         start_epoch_state = int(info[-2])
 
@@ -38,8 +37,8 @@ def check_resume(style_name, higher=False):
         return None, None, 0, 0
 
     if (start_epoch_model == start_epoch_state and start_it_model == start_it_state):
-        initmodel = query_model[higher_it]
-        resume = query_state[higher_it]
+        initmodel = query_model[oldest_it]
+        resume = query_state[oldest_it]
         return initmodel, resume, start_it_model, start_epoch_model
 
 
@@ -105,8 +104,10 @@ parser.add_argument('--epoch', '-e', default=2, type=int)
 parser.add_argument('--lr', '-l', default=1e-3, type=float)
 parser.add_argument('--checkpoint', '-c', default=0, type=int)
 parser.add_argument('--image_size', default=256, type=int)
-parser.add_argument('--auto_resume', default=True, type=bool)
-parser.add_argument('--resume_from_newest', default=False, type=bool)
+parser.add_argument('--auto_resume', '-a', default=False,
+                    action=argparse.BooleanOptionalAction)
+parser.add_argument('--resume_from_older', '-rfo',
+                    default=False, action=argparse.BooleanOptionalAction)
 args = parser.parse_args()
 
 batchsize = args.batchsize
@@ -122,14 +123,16 @@ noise_count = args.noisecount
 style_prefix, _ = os.path.splitext(os.path.basename(args.style_image))
 output = style_prefix if args.output == None else args.output
 checkpoint = args.checkpoint
-slack = checkpoint*2 # 2 save only the last 2 checkpoints
+slack = checkpoint*2  # 2 save only the last 2 checkpoints
 
 if os.path.exists(f'{args.dataset}/../fs.list'):
     # read from file with names to save time
+    print("reading fs.list")
     with open(f'{args.dataset}/../fs.list') as f:
         imagepaths = f.read().splitlines()
 else:
     # one off, create file with image names
+    print("reading dataset directory")
     fs = os.listdir(args.dataset)
     imagepaths = []
     for fn in fs:
@@ -137,6 +140,7 @@ else:
         if ext == '.jpg' or ext == '.png':
             imagepath = os.path.join(args.dataset, fn)
             imagepaths.append(imagepath)
+    print("saving in fs.list") 
     with open(f'{args.dataset}/../fs.list', 'w') as tfile:
         tfile.write('\n'.join(imagepaths))
 
@@ -150,7 +154,8 @@ vgg = VGG()
 
 if args.auto_resume:
     # gather initmodel, resume and last iteration and epoch from saved files
-    args.initmodel, args.resume, start_it, start_ep = check_resume(output, args.resume_from_newest)
+    args.initmodel, args.resume, start_it, start_ep = check_resume(
+        output, args.resume_from_oldest)
 else:
     # manual resume, if specified model and state files will be used, but starting from it and ep 0
     start_it = 0
@@ -261,10 +266,14 @@ for epoch in range(start_ep, n_epoch):
 
         if checkpoint > 0 and i % checkpoint == 0:
             if i >= start_it + slack:
-                os.remove('models/check_{}_{}_{}.model'.format(output, epoch, i - slack))
-                os.remove('models/check_{}_{}_{}.state'.format(output, epoch, i - slack))
-            serializers.save_npz('models/check_{}_{}_{}.model'.format(output, epoch, i), model)
-            serializers.save_npz('models/check_{}_{}_{}.state'.format(output, epoch, i), O)
+                os.remove(
+                    'models/check_{}_{}_{}.model'.format(output, epoch, i - slack))
+                os.remove(
+                    'models/check_{}_{}_{}.state'.format(output, epoch, i - slack))
+            serializers.save_npz(
+                'models/check_{}_{}_{}.model'.format(output, epoch, i), model)
+            serializers.save_npz(
+                'models/check_{}_{}_{}.state'.format(output, epoch, i), O)
 
     print('save "style.model"')
     serializers.save_npz('models/{}_{}.model'.format(output, epoch), model)
