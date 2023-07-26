@@ -8,7 +8,7 @@ then
     unzip -n 'train2014.zip' -d './coco'
 else
     echo dataset folder exists
-    if [ "$1" == "--force_unzip" ]; then
+    if [ "$1" = "--force_unzip" ]; then
         echo unzipping remaining
         unzip -n 'train2014.zip' -d './coco'
     fi
