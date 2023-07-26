@@ -91,3 +91,6 @@ models/check_*.model
 models/check_*.state
 train2014.zip
 coco/*
+.tmp.*/
+
+VGG_ILSVRC_16_layers.caffemodel
