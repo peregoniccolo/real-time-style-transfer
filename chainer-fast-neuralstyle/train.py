@@ -20,16 +20,16 @@ def check_resume(style_name, oldest):
             query_model) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same model found"
         query_model.sort()
         info = query_model[oldest_it].split("/")[-1].split(".")[0].split("_")
-        start_it_model = int(info[-1]) // batchsize
+        start_it_model = int(info[-1])
         start_epoch_model = int(info[-2])
 
-    query_state = glob.glob(f'./models/{style_name}*.state')
+    query_state = glob.glob(f'./models/check_{style_name}*.state')
     if (query_state):
         assert len(
             query_state) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same state found"
         query_state.sort()
         info = query_state[oldest_it].split("/")[-1].split(".")[0].split("_")
-        start_it_state = int(info[-1]) // batchsize
+        start_it_state = int(info[-1])
         start_epoch_state = int(info[-2])
 
     if not query_model or not query_state:
@@ -106,7 +106,7 @@ parser.add_argument('--checkpoint', '-c', default=0, type=int)
 parser.add_argument('--image_size', default=256, type=int)
 parser.add_argument('--auto_resume', '-a', default=False,
                     action=argparse.BooleanOptionalAction)
-parser.add_argument('--resume_from_older', '-rfo',
+parser.add_argument('--resume_from_oldest', '-rfo',
                     default=False, action=argparse.BooleanOptionalAction)
 args = parser.parse_args()
 
@@ -140,7 +140,7 @@ else:
         if ext == '.jpg' or ext == '.png':
             imagepath = os.path.join(args.dataset, fn)
             imagepaths.append(imagepath)
-    print("saving in fs.list") 
+    print("saving in fs.list")
     with open(f'{args.dataset}/../fs.list', 'w') as tfile:
         tfile.write('\n'.join(imagepaths))
 
