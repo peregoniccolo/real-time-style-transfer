@@ -29,7 +29,7 @@ def _transform(in_image,loaded,m_path):
         if RUN_ON_GPU:
             cuda.get_device(0).use() #assuming only one core
             model.to_gpu()
-        print ("loaded")
+        print ('loaded')
 
     xp = np if not RUN_ON_GPU else cuda.cupy
     
@@ -56,22 +56,22 @@ if __name__ == '__main__':
     path_to_presets = './chainer-fast-neuralstyle/models/presets/'
     path_to_user_models = './chainer-fast-neuralstyle/models/'
 
-    cv2.namedWindow("style")
+    cv2.namedWindow('style')
     vc = cv2.VideoCapture(CAMERA_ID)
     vc.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
     vc.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
 
     loaded = False
-    mpath = f'{path_to_user_models}test_style.model'
+    mpath = f'{path_to_user_models}test_style4.model'
 
     while vc.isOpened():
         rval, frame = vc.read()
         
-        if rval:
+        if rval and cv2.getWindowProperty('style', 0) >= 0:
             
             start = time.time()
             frame = cv2.resize( _transform(frame,loaded,mpath), (0,0), fx=1.0, fy=1.0)
-            cv2.imshow("style", frame)
+            cv2.imshow('style', frame)
             print(time.time() - start, 'sec')
             
             loaded=True
@@ -107,5 +107,11 @@ if __name__ == '__main__':
                 KEEP_COLORS = not KEEP_COLORS
             if 'q' == chr(key & 0xFF):
                 break
-                 
-    cv2.destroyWindow("preview")
+
+            # close with X
+            if cv2.getWindowProperty('style', cv2.WND_PROP_VISIBLE) < 1:
+                closed = True
+                break 
+    
+    if not closed:
+        cv2.destroyWindow('style')
