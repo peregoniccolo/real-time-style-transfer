@@ -47,15 +47,16 @@ Arguments:
 | <div style="width:160px">--resume_from_oldest</div> | -rso | // | // | If present start from the oldest saved checkpoint. |
 | --initmodel | -i | None | str | Initialize model manually with given file. |
 | --resume | -r | None | str | Initialize optimizer manyally with given file.  |
-| --lambda_feat | // | 1.0 | float | Feature loss weight. |
-| --lambda_style | // | 5.0 | float | Style loss weight. |
-| --lambda_noise | // | 1000.0 | float | Training weight of the popping induced by noise |
-| --noise | // | 30 | int | Range of noise for popping reduction. |
-| --noisecount | // | 1000 | int | Number of pixels to modify with noise. |
-| --epoch | -e | 2 | int | Number of epochs to train for. |
 | --lr | -r | 1e-3 | float | Learning rate for the Adam optimizer. |
+| --lambda_tv | -ltv | 1e-6 | float | Weight of total variation regularization (to be set between 10e-4 and 10e-6). |
+| --lambda_feat | -lf | 1.0 | float | Feature loss weight. |
+| --lambda_style | -ls | 5.0 | float | Style loss weight. |
+| --lambda_noise | -ls | 1000.0 | float | Training weight of the popping induced by noise |
+| --noise | -n | 30 | int | Range of noise for popping reduction. |
+| --noisecount | -nc | 1000 | int | Number of pixels to modify with noise. |
+| --epoch | -e | 2 | int | Number of epochs to train for. |
 | --checkpoint | -c | 0 | int | If > 0, each time the current iteration % checkpoint == 0, the model and state will be saved as checkpoints. |
-| --image_size | // | 256 | int | Size to which the images are resized to. |
+| --image_size | -is | 256 | int | Size to which the images are resized to. |
 
 ## Generate
 ```

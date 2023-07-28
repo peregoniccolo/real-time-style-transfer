@@ -90,20 +90,20 @@ parser.add_argument('--resume', '-r', default=None, type=str,
                     help='resume the optimization from snapshot')
 parser.add_argument('--output', '-o', default=None, type=str,
                     help='output model file path without extension')
-parser.add_argument('--lambda_tv', default=1e-6, type=float,
+parser.add_argument('--lambda_tv', '-ltv', default=1e-6, type=float,
                     help='weight of total variation regularization according to the paper to be set between 10e-4 and 10e-6.')
-parser.add_argument('--lambda_feat', default=1.0, type=float)
-parser.add_argument('--lambda_style', default=5.0, type=float)
-parser.add_argument('--lambda_noise', default=1000.0, type=float,
+parser.add_argument('--lambda_feat', '-lf', default=1.0, type=float)
+parser.add_argument('--lambda_style', '-ls', default=5.0, type=float)
+parser.add_argument('--lambda_noise', '-ln', default=1000.0, type=float,
                     help='Training weight of the popping induced by noise')
-parser.add_argument('--noise', default=30, type=int,
+parser.add_argument('--noise', '-n', default=30, type=int,
                     help='range of noise for popping reduction')
-parser.add_argument('--noisecount', default=1000, type=int,
+parser.add_argument('--noisecount', '-nc', default=1000, type=int,
                     help='number of pixels to modify with noise')
 parser.add_argument('--epoch', '-e', default=2, type=int)
 parser.add_argument('--lr', '-l', default=1e-3, type=float)
 parser.add_argument('--checkpoint', '-c', default=0, type=int)
-parser.add_argument('--image_size', default=256, type=int)
+parser.add_argument('--image_size', '-is', default=256, type=int)
 parser.add_argument('--auto_resume', '-a', default=False,
                     action=argparse.BooleanOptionalAction)
 parser.add_argument('--resume_from_oldest', '-rfo',
