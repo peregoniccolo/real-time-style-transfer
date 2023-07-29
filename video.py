@@ -6,6 +6,8 @@ import numpy as np
 from PIL import Image, ImageFilter
 import time
 
+print(os.environ.get('CUDA_PATH'))
+
 RUN_ON_GPU = False
 CAMERA_ID = 0 # 0 for integrated cam, 1 for first external can ....
 WIDTH=1
@@ -62,7 +64,7 @@ if __name__ == '__main__':
     vc.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
 
     loaded = False
-    mpath = f'{path_to_user_models}test_style4.model'
+    mpath = f'{path_to_user_models}test_style5.model'
 
     while vc.isOpened():
         rval, frame = vc.read()

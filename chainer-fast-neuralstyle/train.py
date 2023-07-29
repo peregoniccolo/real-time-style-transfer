@@ -279,5 +279,8 @@ for epoch in range(start_ep, n_epoch):
     serializers.save_npz('models/{}_{}.model'.format(output, epoch), model)
     serializers.save_npz('models/{}_{}.state'.format(output, epoch), O)
 
+    # finished an epoch, restarting from it 0
+    start_it = 0
+
 serializers.save_npz('models/{}.model'.format(output), model)
 serializers.save_npz('models/{}.state'.format(output), O)
