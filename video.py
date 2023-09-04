@@ -63,8 +63,9 @@ if __name__ == '__main__':
     vc.set(cv2.CAP_PROP_FRAME_WIDTH,WIDTH)
     vc.set(cv2.CAP_PROP_FRAME_HEIGHT,HEIGHT)
 
+    closed = False
     loaded = False
-    mpath = f'{path_to_user_models}test_style5.model'
+    mpath = f'{path_to_user_models}test_style13.model'
 
     while vc.isOpened():
         rval, frame = vc.read()
@@ -79,10 +80,10 @@ if __name__ == '__main__':
             loaded=True
             key = cv2.waitKey(1)
             if key == 49: # 1
-                mpath=f'{path_to_presets}edtaonisl.model'
+                mpath=f'{path_to_user_models}test_style13.model'
                 loaded=False
             if key == 50: # 2
-                mpath=f'{path_to_presets}natasha-russu.model'
+                mpath=f'{path_to_user_models}colors_9.model'
                 loaded=False
             if key == 51: # 3
                 mpath=f'{path_to_presets}kandinsky_e2_crop512.model'

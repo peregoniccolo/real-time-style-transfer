@@ -89,8 +89,6 @@ ENV/
 
 models/check_*.model
 models/check_*.state
-models/test_style*
-models/colors*
 
 train2014.zip
 coco/*
