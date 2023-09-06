@@ -5,12 +5,12 @@ fi
 if [ ! -d coco/train2014 ]
 then
     echo unzipping everything
-    unzip -n 'train2014.zip' -j -d './coco/train2014/images/'
+    unzip -j -n 'train2014.zip' -d './coco/train2014/images/'
 else
     echo dataset folder exists
     if [ "$1" = "--force_unzip" ]; then
         echo unzipping remaining
-        unzip -n 'train2014.zip' -j -d './coco/train2014/images/'
+        unzip -j -n 'train2014.zip' -d './coco/train2014/images/'
     fi
 fi
 
