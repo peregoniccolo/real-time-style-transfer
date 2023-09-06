@@ -1,7 +1,7 @@
 import os
 import argparse
 
-parser = argparse.ArgumentParser(description='Real-time style transfer')
+parser = argparse.ArgumentParser(description='List population')
 parser.add_argument('--force_update', '-f', default=False,
                     action=argparse.BooleanOptionalAction)
 parser.add_argument('--dataset', '-d', default='./coco/train2014', type=str)

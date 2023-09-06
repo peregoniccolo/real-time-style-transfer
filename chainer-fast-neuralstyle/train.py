@@ -11,10 +11,10 @@ from net import *
 import glob
 
 
-def check_resume(style_name, oldest):
+def check_resume(rel_model_path, output, oldest):
     oldest_it = 0 if oldest else 1
 
-    query_model = glob.glob(f'./models/check_{style_name}*.model')
+    query_model = glob.glob(f'{rel_model_path}check_{output}*.model')
     if (query_model):
         assert len(
             query_model) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same model found"
@@ -23,7 +23,7 @@ def check_resume(style_name, oldest):
         start_it_model = int(info[-1])
         start_epoch_model = int(info[-2])
 
-    query_state = glob.glob(f'./models/check_{style_name}*.state')
+    query_state = glob.glob(f'{rel_model_path}check_{output}*.state')
     if (query_state):
         assert len(
             query_state) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same state found"
@@ -152,10 +152,15 @@ print(n_iter, 'iterations,', n_epoch, 'epochs')
 model = FastStyleNet()
 vgg = VGG()
 
+if not os.path.exists(output):
+    os.mkdir(output)
+
+rel_model_dir_path = f"models/{output}/"
+
 if args.auto_resume:
     # gather initmodel, resume and last iteration and epoch from saved files
     args.initmodel, args.resume, start_it, start_ep = check_resume(
-        output, args.resume_from_oldest)
+        rel_model_dir_path, output, args.resume_from_oldest)
 else:
     # manual resume, if specified model and state files will be used, but starting from it and ep 0
     start_it = 0
@@ -186,6 +191,7 @@ for i in range(batchsize):
     style_b[i] = style
 feature_s = vgg(Variable(style_b))
 gram_s = [gram_matrix(y) for y in feature_s]
+
 
 for epoch in range(start_ep, n_epoch):
     print('epoch', epoch)
@@ -267,20 +273,20 @@ for epoch in range(start_ep, n_epoch):
         if checkpoint > 0 and i % checkpoint == 0:
             if i >= start_it + slack:
                 os.remove(
-                    'models/check_{}_{}_{}.model'.format(output, epoch, i - slack))
+                    f'{rel_model_dir_path}check_{output}_{epoch}_{i-slack}.model')
                 os.remove(
-                    'models/check_{}_{}_{}.state'.format(output, epoch, i - slack))
+                    f'{rel_model_dir_path}check_{output}_{epoch}_{i-slack}.state')
             serializers.save_npz(
-                'models/check_{}_{}_{}.model'.format(output, epoch, i), model)
+                f'{rel_model_dir_path}check_{output}_{epoch}_{i}.model', model)
             serializers.save_npz(
-                'models/check_{}_{}_{}.state'.format(output, epoch, i), O)
+                f'{rel_model_dir_path}check_{output}_{epoch}_{i}.state', O)
 
     print('save "style.model"')
-    serializers.save_npz('models/{}_{}.model'.format(output, epoch), model)
-    serializers.save_npz('models/{}_{}.state'.format(output, epoch), O)
+    serializers.save_npz(f'{rel_model_dir_path}{output}_{epoch}.model', model)
+    serializers.save_npz(f'{rel_model_dir_path}{output}_{epoch}.state', O)
 
     # finished an epoch, restarting from it 0
     start_it = 0
 
-serializers.save_npz('models/{}.model'.format(output), model)
-serializers.save_npz('models/{}.state'.format(output), O)
+serializers.save_npz(f'{rel_model_dir_path}{output}.model', model)
+serializers.save_npz(f'{rel_model_dir_path}{output}.state', O)
