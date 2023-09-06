@@ -17,23 +17,23 @@ def check_resume(rel_model_path, output, oldest):
     query_model = glob.glob(f'{rel_model_path}check_{output}*.model')
     if (query_model):
         assert len(
-            query_model) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same model found"
+            query_model) == 2, 'dunno where to start, 1 or more than 2 checkpoints for the same model found'
         query_model.sort()
-        info = query_model[oldest_it].split("/")[-1].split(".")[0].split("_")
+        info = query_model[oldest_it].split('/')[-1].split('.')[0].split('_')
         start_it_model = int(info[-1])
         start_epoch_model = int(info[-2])
 
     query_state = glob.glob(f'{rel_model_path}check_{output}*.state')
     if (query_state):
         assert len(
-            query_state) == 2, "dunno where to start, 1 or more than 2 checkpoints for the same state found"
+            query_state) == 2, 'dunno where to start, 1 or more than 2 checkpoints for the same state found'
         query_state.sort()
-        info = query_state[oldest_it].split("/")[-1].split(".")[0].split("_")
+        info = query_state[oldest_it].split('/')[-1].split('.')[0].split('_')
         start_it_state = int(info[-1])
         start_epoch_state = int(info[-2])
 
     if not query_model or not query_state:
-        print("unmatching state and model found, starting over")
+        print('unmatching state and model found, starting over')
         return None, None, 0, 0
 
     if (start_epoch_model == start_epoch_state and start_it_model == start_it_state):
@@ -125,14 +125,14 @@ output = style_prefix if args.output == None else args.output
 checkpoint = args.checkpoint
 slack = checkpoint*2  # 2 save only the last 2 checkpoints
 
-if os.path.exists(f'{args.dataset}/../fs.list'):
+if os.path.exists(f'{args.dataset}/fs.list'):
     # read from file with names to save time
-    print("reading fs.list")
-    with open(f'{args.dataset}/../fs.list') as f:
+    print('reading fs.list')
+    with open(f'{args.dataset}/fs.list') as f:
         imagepaths = f.read().splitlines()
 else:
     # one off, create file with image names
-    print("reading dataset directory")
+    print('reading dataset directory')
     fs = os.listdir(args.dataset)
     imagepaths = []
     for fn in fs:
@@ -140,8 +140,8 @@ else:
         if ext == '.jpg' or ext == '.png':
             imagepath = os.path.join(args.dataset, fn)
             imagepaths.append(imagepath)
-    print("saving in fs.list")
-    with open(f'{args.dataset}/../fs.list', 'w') as tfile:
+    print('saving in fs.list')
+    with open(f'{args.dataset}/fs.list', 'w') as tfile:
         tfile.write('\n'.join(imagepaths))
 
 n_data = len(imagepaths)
@@ -155,7 +155,7 @@ vgg = VGG()
 if not os.path.exists(output):
     os.mkdir(output)
 
-rel_model_dir_path = f"models/{output}/"
+rel_model_dir_path = f'models/{output}/'
 
 if args.auto_resume:
     # gather initmodel, resume and last iteration and epoch from saved files
