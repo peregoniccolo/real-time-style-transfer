@@ -25,12 +25,12 @@ else:
         os.remove(fs_path)
 
     print('reading dataset directory')
-    fs = os.listdir(dataset)
+    fs = os.listdir(f'{dataset}/images')
     imagepaths = []
     for fn in fs:
         base, ext = os.path.splitext(fn)
         if ext == '.jpg' or ext == '.png':
-            imagepath = os.path.join(dataset, fn)
+            imagepath = os.path.join(f'{dataset}/images', fn)
             imagepaths.append(imagepath)
     print('saving in fs.list') 
     with open(fs_path, 'w') as tfile:

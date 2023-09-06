@@ -111,7 +111,6 @@ parser.add_argument('--resume_from_oldest', '-rfo',
 args = parser.parse_args()
 
 batchsize = args.batchsize
-
 image_size = args.image_size
 n_epoch = args.epoch
 lambda_tv = args.lambda_tv
@@ -133,12 +132,12 @@ if os.path.exists(f'{args.dataset}/fs.list'):
 else:
     # one off, create file with image names
     print('reading dataset directory')
-    fs = os.listdir(args.dataset)
+    fs = os.listdir(f'{args.dataset}/images')
     imagepaths = []
     for fn in fs:
         base, ext = os.path.splitext(fn)
         if ext == '.jpg' or ext == '.png':
-            imagepath = os.path.join(args.dataset, fn)
+            imagepath = os.path.join(f'{args.dataset}/images', fn)
             imagepaths.append(imagepath)
     print('saving in fs.list')
     with open(f'{args.dataset}/fs.list', 'w') as tfile:
@@ -152,10 +151,10 @@ print(n_iter, 'iterations,', n_epoch, 'epochs')
 model = FastStyleNet()
 vgg = VGG()
 
-if not os.path.exists(output):
-    os.mkdir(output)
-
 rel_model_dir_path = f'models/{output}/'
+
+if not os.path.exists(rel_model_dir_path):
+    os.mkdir(rel_model_dir_path)
 
 if args.auto_resume:
     # gather initmodel, resume and last iteration and epoch from saved files

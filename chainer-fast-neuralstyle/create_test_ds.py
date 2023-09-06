@@ -32,7 +32,7 @@ for count in range(dataset_size):
     popped_img = imagepaths.pop(rand_num)
     fn = popped_img.split('/')
     fn = fn[len(fn)-1]
-    shutil.copyfile(f'{dataset_source}/{fn}', f'{dataset_destination}{dataset_size}/{fn}')
+    shutil.copyfile(f'{dataset_source}/images/{fn}', f'{dataset_destination}{dataset_size}/images/{fn}')
 
 n_data = len(imagepaths)
 print(f'num traning images: {n_data}')
