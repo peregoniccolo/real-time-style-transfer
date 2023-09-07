@@ -56,6 +56,7 @@ Arguments:
 | --noisecount | -nc | 1000 | int | Number of pixels to modify with noise. |
 | --epoch | -e | 2 | int | Number of epochs to train for. |
 | --checkpoint | -c | 0 | int | If > 0, each time the current iteration % checkpoint == 0, the model and state will be saved as checkpoints. |
+| --checkpoint_number | -cn | 2 | int | Number of checkpoints to keep saved during execution. |
 | --image_size | -is | 256 | int | Size to which the images are resized to. |
 
 ## Generate
