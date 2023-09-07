@@ -390,12 +390,12 @@ for epoch in range(start_ep, n_epoch):
 
     print('save "style.model"')
     serializers.save_npz(
-        f'final_ep_{rel_model_dir_path}{output}_{epoch}.model', model)
+        f'{rel_model_dir_path}final_ep_{output}_{epoch}.model', model)
     serializers.save_npz(
-        f'final_ep_{rel_model_dir_path}{output}_{epoch}.state', O)
+        f'{rel_model_dir_path}final_ep_{output}_{epoch}.state', O)
 
     # finished an epoch, restarting from it 0
     start_it = 0
 
-serializers.save_npz(f'final_{rel_model_dir_path}{output}.model', model)
-serializers.save_npz(f'final_{rel_model_dir_path}{output}.state', O)
+serializers.save_npz(f'{rel_model_dir_path}final_{output}.model', model)
+serializers.save_npz(f'{rel_model_dir_path}final_{output}.state', O)
