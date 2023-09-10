@@ -12,6 +12,15 @@ from net import *
 import glob
 
 
+def output_name_check(output):
+    # character _ generates problems later on so i substitute it
+    if (output.__contains__('_')):
+        print('found character "_" in the output name, replaced with "-" to avoid problems')
+        return output.replace('_', '-')
+    else:
+        return output
+
+
 def check_available_models(rel_model_path, output, checkpoint_number):
     query_models = glob.glob(f'{rel_model_path}check_{output}*.model')
     query_states = glob.glob(f'{rel_model_path}check_{output}*.state')
@@ -36,6 +45,42 @@ def check_available_models(rel_model_path, output, checkpoint_number):
         assert name_model == name_state, 'model and state files do not coincide'
 
     return query_models, query_states
+
+def get_input_epoch():
+    epoch_str = input('insert number of completed epochs (including epoch 0): ')
+    while not epoch_str.isdigit():
+        epoch_str = input('input wasn\'t a digit, please insert number (integer) of completed epochs: ')
+    return int(epoch_str)
+
+def resume_from_epoch(fn, output):
+    fn, _ = os.path.splitext(os.path.basename(fn))
+    fn_split = fn.split('_')
+    if fn_split[0] == 'check' or fn_split[0] == 'oldcheck':
+        if len(fn_split) == 4 and fn_split[1] == output and fn_split[2].isdigit() and fn_split[3].isdigit():
+            print('initmodel from filetype:\n' +
+                  '\tcheck_{output}_{epoch}_{iteration}\n' +
+                  '\toldcheck_{output}_{epoch}_{iteration}\n'
+                  )
+            return int(fn_split[2])  # epoch_to_return, has_ended_int
+    elif fn_split[0] == 'final':
+        if len(fn_split) == 4 and fn_split[1] == 'ep' and fn_split[2] == output and fn_split[3].isdigit():
+            print('initmodel from filetype:\n' +
+                  '\tfinal_ep_{output}_{epoch}\n' 
+                  )
+            return fn_split[3]
+        if len(fn_split) == 2 and fn_split[1] == output:
+            print('initmodel from filetype:\n' +
+                  '\tfinal_{output}\n' 
+                  )
+            return get_input_epoch()
+
+    print('bad naming convention or no epoch found in the specified model filename\n' +
+          'please rename it following one of the possible conventions' +
+          '\tcheck_{output}_{epoch}_{iteration}\n' +
+          '\toldcheck_{output}_{epoch}_{iteration}\n' +
+          '\tfinal_ep_{output}_{epoch}\n'
+          )
+    return None
 
 
 def check_resume(query_models, query_states, oldest):
@@ -131,6 +176,7 @@ def total_variation(x):
 
 
 parser = argparse.ArgumentParser(description='Real-time style transfer')
+group = parser.add_mutually_exclusive_group()
 parser.add_argument(
     '--gpu', '-g', default=-1, type=int, help='GPU ID (negative value indicates CPU)'
 )
@@ -147,7 +193,7 @@ parser.add_argument(
 parser.add_argument(
     '--batchsize', '-b', type=int, default=1, help='batch size (default value is 1)'
 )
-parser.add_argument(
+group.add_argument(
     '--initmodel',
     '-i',
     default=None,
@@ -199,7 +245,7 @@ parser.add_argument('--lr', '-l', default=1e-3, type=float)
 parser.add_argument('--checkpoint', '-c', default=0, type=int)
 parser.add_argument('--checkpoint_number', '-cn', default=2, type=int)
 parser.add_argument('--image_size', '-is', default=256, type=int)
-parser.add_argument(
+group.add_argument(
     '--auto_resume', '-a', default=False, action=argparse.BooleanOptionalAction
 )
 parser.add_argument(
@@ -219,6 +265,7 @@ noise_range = args.noise
 noise_count = args.noisecount
 style_prefix, _ = os.path.splitext(os.path.basename(args.style_image))
 output = style_prefix if args.output == None else args.output
+output = output_name_check(output)
 checkpoint = args.checkpoint
 checkpoint_number = args.checkpoint_number
 
@@ -267,6 +314,12 @@ else:
     # manual resume, if specified model and state files will be used, but starting from it and ep 0
     start_it = 0
     start_ep = 0
+    if args.initmodel:    
+        _, model_name = os.path.split(args.initmodel)
+        base_epoch = resume_from_epoch(model_name, output)
+        if base_epoch != None: # it means also has ended is != None
+            start_ep += base_epoch
+            n_epoch  += base_epoch
 
 serializers.load_npz('vgg16.model', vgg)
 if args.initmodel:
@@ -390,9 +443,9 @@ for epoch in range(start_ep, n_epoch):
 
     print('save "style.model"')
     serializers.save_npz(
-        f'{rel_model_dir_path}final_ep_{output}_{epoch}.model', model)
+        f'{rel_model_dir_path}finalep_{output}_{epoch}.model', model)
     serializers.save_npz(
-        f'{rel_model_dir_path}final_ep_{output}_{epoch}.state', O)
+        f'{rel_model_dir_path}finalep_{output}_{epoch}.state', O)
 
     # finished an epoch, restarting from it 0
     start_it = 0
