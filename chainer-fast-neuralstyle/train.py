@@ -53,7 +53,9 @@ def get_input_epoch():
     return int(epoch_str)
 
 def resume_from_epoch(fn, output):
-    fn, _ = os.path.splitext(os.path.basename(fn))
+    fn, ext = os.path.splitext(os.path.basename(fn))
+    assert ext == '.model', 'initmodel must be a .model file'
+
     fn_split = fn.split('_')
     if fn_split[0] == 'check' or fn_split[0] == 'oldcheck':
         if len(fn_split) == 4 and fn_split[1] == output and fn_split[2].isdigit() and fn_split[3].isdigit():
@@ -61,18 +63,18 @@ def resume_from_epoch(fn, output):
                   '\tcheck_{output}_{epoch}_{iteration}\n' +
                   '\toldcheck_{output}_{epoch}_{iteration}\n'
                   )
-            return int(fn_split[2])  # epoch_to_return, has_ended_int
+            return int(fn_split[2]) + 0  # last found epoch + has_ended_int (1 if completed epoch)
     elif fn_split[0] == 'final':
         if len(fn_split) == 4 and fn_split[1] == 'ep' and fn_split[2] == output and fn_split[3].isdigit():
             print('initmodel from filetype:\n' +
                   '\tfinal_ep_{output}_{epoch}\n' 
                   )
-            return fn_split[3]
+            return int(fn_split[3]) + 1
         if len(fn_split) == 2 and fn_split[1] == output:
             print('initmodel from filetype:\n' +
                   '\tfinal_{output}\n' 
                   )
-            return get_input_epoch()
+            return get_input_epoch() + 0 # i already ask for completed epochs
 
     print('bad naming convention or no epoch found in the specified model filename\n' +
           'please rename it following one of the possible conventions' +
@@ -316,10 +318,11 @@ else:
     start_ep = 0
     if args.initmodel:    
         _, model_name = os.path.split(args.initmodel)
-        base_epoch = resume_from_epoch(model_name, output)
-        if base_epoch != None: # it means also has ended is != None
-            start_ep += base_epoch
-            n_epoch  += base_epoch
+        completed_epochs = resume_from_epoch(model_name, output)
+        if completed_epochs != None: # it means also has ended is != None
+            print(f'completed epochs: {completed_epochs}')
+            start_ep += completed_epochs
+            n_epoch  += completed_epochs
 
 serializers.load_npz('vgg16.model', vgg)
 if args.initmodel:
