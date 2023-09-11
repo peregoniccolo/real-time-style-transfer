@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
     closed = False
     loaded = False
-    mpath = f'{path_to_user_models}test_style13.model'
+    mpath = f'{path_to_user_models}test_style/final_test_style13.model'
 
     while vc.isOpened():
         rval, frame = vc.read()
@@ -80,16 +80,16 @@ if __name__ == '__main__':
             loaded=True
             key = cv2.waitKey(1)
             if key == 49: # 1
-                mpath=f'{path_to_user_models}test_style13.model'
+                mpath=f'{path_to_user_models}test_style/final_test_style13.model'
                 loaded=False
             if key == 50: # 2
-                mpath=f'{path_to_user_models}colors_9.model'
+                mpath=f'{path_to_user_models}colors/final_colors_9.model'
                 loaded=False
             if key == 51: # 3
-                mpath=f'{path_to_presets}kandinsky_e2_crop512.model'
+                mpath=f'{path_to_user_models}altocumulus/final_ep_altocumulus_3.model'
                 loaded=False
             if key == 52: # 4
-                mpath=f'{path_to_presets}composition.model'
+                mpath=f'{path_to_user_models}altocumulus/final_ep_altocumulus_4.model'
                 loaded=False
             if key == 53: # 5
                 mpath=f'{path_to_presets}scream-style.model'
