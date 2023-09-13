@@ -6,9 +6,7 @@ import numpy as np
 from PIL import Image, ImageFilter
 import time
 
-print(os.environ.get('CUDA_PATH'))
-
-RUN_ON_GPU = False
+RUN_ON_GPU = True
 CAMERA_ID = 0  # 0 for integrated cam, 1 for first external can ....
 WIDTH = 1
 HEIGHT = 1

@@ -31,7 +31,12 @@ class ResidualBlock(chainer.Chain):
         return h + x
 
 class FastStyleNet(chainer.Chain):
+
     def __init__(self):
+        # self.info = {
+        #     'batchsize': batchsize
+        # }
+
         super(FastStyleNet, self).__init__(
             c1=L.Convolution2D(3, 32, 9, stride=1, pad=4),
             c2=L.Convolution2D(32, 64, 4, stride=2, pad=1),
