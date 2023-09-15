@@ -4,6 +4,7 @@ if [ ! -f train2014.zip ]; then
 fi
 if [ ! -d coco/train2014 ]
 then
+    mkdir -p coco/train2014/images/
     echo unzipping everything
     unzip -j -n 'train2014.zip' -d './coco/train2014/images/'
 else

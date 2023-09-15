@@ -30,11 +30,12 @@ else:
     for fn in fs:
         base, ext = os.path.splitext(fn)
         if ext == '.jpg' or ext == '.png':
-            imagepath = os.path.join(f'{dataset}/images', fn)
+            imagepath = f'{dataset}/images/{fn}'
             imagepaths.append(imagepath)
     print('saving in fs.list') 
     with open(fs_path, 'w') as tfile:
         tfile.write('\n'.join(imagepaths))
+    print('done')
 
 n_data = len(imagepaths)
 print('num traning images:', n_data)

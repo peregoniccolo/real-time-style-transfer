@@ -97,3 +97,5 @@ coco/*
 VGG_ILSVRC_16_layers.caffemodel
 
 **/.vscode
+
+**desktop.ini
