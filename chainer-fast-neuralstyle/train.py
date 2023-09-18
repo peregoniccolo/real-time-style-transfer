@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 import numpy as np
 import os
 import argparse
@@ -46,11 +45,15 @@ def check_available_models(rel_model_path, output, checkpoint_number):
 
     return query_models, query_states
 
+
 def get_input_epoch():
-    epoch_str = input('insert number of completed epochs (including epoch 0): ')
+    epoch_str = input(
+        'insert number of completed epochs (including epoch 0): ')
     while not epoch_str.isdigit():
-        epoch_str = input('input wasn\'t a digit, please insert number (integer) of completed epochs: ')
+        epoch_str = input(
+            'input wasn\'t a digit, please insert number (integer) of completed epochs: ')
     return int(epoch_str)
+
 
 def resume_from_epoch(fn, output):
     fn, ext = os.path.splitext(os.path.basename(fn))
@@ -63,18 +66,19 @@ def resume_from_epoch(fn, output):
                   '\tcheck_{output}_{epoch}_{iteration}\n' +
                   '\toldcheck_{output}_{epoch}_{iteration}\n'
                   )
-            return int(fn_split[2]) + 0  # last found epoch + has_ended_int (1 if completed epoch)
+            # last found epoch + has_ended_int (1 if completed epoch)
+            return int(fn_split[2]) + 0
     elif fn_split[0] == 'final':
         if len(fn_split) == 4 and fn_split[1] == 'ep' and fn_split[2] == output and fn_split[3].isdigit():
             print('initmodel from filetype:\n' +
-                  '\tfinal_ep_{output}_{epoch}\n' 
+                  '\tfinal_ep_{output}_{epoch}\n'
                   )
             return int(fn_split[3]) + 1
         if len(fn_split) == 2 and fn_split[1] == output:
             print('initmodel from filetype:\n' +
-                  '\tfinal_{output}\n' 
+                  '\tfinal_{output}\n'
                   )
-            return get_input_epoch() + 0 # i already ask for completed epochs
+            return get_input_epoch() + 0  # i already ask for completed epochs
 
     print('bad naming convention or no epoch found in the specified model filename\n' +
           'please rename it following one of the possible conventions' +
@@ -312,17 +316,19 @@ if args.auto_resume:
     args.initmodel, args.resume, start_it, start_ep = check_resume(
         query_models, query_states, args.resume_from_oldest
     )
+    n_epoch += start_ep
 else:
     # manual resume, if specified model and state files will be used, but starting from it and ep 0
     start_it = 0
     start_ep = 0
-    if args.initmodel:    
+    if args.initmodel:
         _, model_name = os.path.split(args.initmodel)
         completed_epochs = resume_from_epoch(model_name, output)
-        if completed_epochs != None: # it means also has ended is != None
+        if completed_epochs != None: 
             print(f'completed epochs: {completed_epochs}')
             start_ep += completed_epochs
-            n_epoch  += completed_epochs
+            n_epoch += completed_epochs
+
 
 serializers.load_npz('vgg16.model', vgg)
 if args.initmodel:
