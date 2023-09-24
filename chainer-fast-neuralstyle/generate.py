@@ -40,6 +40,8 @@ out_filepath, out_filename = os.path.split(args.out)
 if not out_filepath == '':
     assert os.path.exists(out_filepath), f'The specified output directory "{out_filepath}" does not exit'
 
+assert os.path.exists(args.input), 'specified image to transform does not exist'
+
 fn_out, ext = os.path.splitext(out_filename)
 if ext == '':
     print('Using same extention as the input')

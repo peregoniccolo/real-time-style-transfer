@@ -347,6 +347,8 @@ if args.resume:
     print('load optimizer state from', args.resume)
     serializers.load_npz(args.resume, O)
 
+
+assert os.path.exists(args.style_image), 'specified style image does not exist'
 style = vgg.preprocess(
     np.asarray(
         Image.open(args.style_image).convert(
