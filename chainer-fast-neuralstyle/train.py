@@ -31,7 +31,7 @@ def check_available_models(rel_model_path, output, checkpoint_number):
     # check number of saved models is lower than the specified amount to keep track of
     assert (
         len(query_models) <= checkpoint_number
-    ), f'too much chakpoint saved, delete some or change checkpoint number'
+    ), f'too much checkpoint saved, delete some or change checkpoint number'
     # check epochs and states match in models and states
 
     query_models = natsort.natsorted(query_models)
